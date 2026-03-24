@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - User Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --card: #161d2e;
+      --surface: #111827;
+      --border: #1e2d45;
+      --accent: #3b82f6;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.2rem;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .group { margin-bottom: 0.9rem; }
+
+    label {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    input, select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.8rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+
+    .error {
+      color: #fca5a5;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+
+    .btn {
+      border-radius: 8px;
+      padding: 0.65rem 0.95rem;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 th:text="${formMode == 'edit'} ? 'Edit User' : 'Create User'">User Form</h1>
+    <div class="sub" th:text="${formMode == 'edit'} ? 'Update account details and role.' : 'Create an account for Admin (Instructor) or Student.'"></div>
+
+    <form th:action="${formMode == 'edit'} ? @{/admin/users/{id}/edit(id=${editingUserId})} : @{/admin/users/new}" method="post" th:object="${adminUser}">
+      <div class="group">
+        <label for="name">Name</label>
+        <input id="name" type="text" th:field="*{name}" required />
+        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+      </div>
+
+      <div class="group">
+        <label for="email">Email</label>
+        <input id="email" type="email" th:field="*{email}" required />
+        <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+      </div>
+
+      <div class="group">
+        <label for="password" th:text="${formMode == 'edit'} ? 'Password (optional to keep current)' : 'Password'"></label>
+        <input id="password" type="password" th:field="*{password}" th:attr="required=${formMode != 'edit'}" />
+        <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+      </div>
+
+      <div class="group">
+        <label for="role">Role</label>
+        <select id="role" th:field="*{role}">
+          <option value="ADMIN">ADMIN (INSTRUCTOR)</option>
+          <option value="STUDENT">STUDENT</option>
+        </select>
+        <div class="error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" type="submit" th:text="${formMode == 'edit'} ? 'Save Changes' : 'Create User'">Save</button>
+        <a class="btn ghost" href="/admin-dashboard">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

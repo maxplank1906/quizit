@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Attempt</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0b0f1a; color: #e2e8f0; margin: 0; }
+    .container { max-width: 900px; margin: 2rem auto; padding: 1rem; }
+    .card { background: #161d2e; border: 1px solid #1e2d45; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+    h1 { margin-bottom: 1rem; }
+    label { display: block; margin: 0.4rem 0; }
+    .btn { padding: 0.7rem 1rem; border: none; border-radius: 8px; background: #3b82f6; color: #fff; cursor: pointer; }
+    .top-links { margin-bottom: 1rem; }
+    .top-links a { color: #7dd3fc; text-decoration: none; margin-right: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-links">
+      <a href="/student-dashboard">Back to Dashboard</a>
+      <a href="/logout">Logout</a>
+    </div>
+
+    <h1 th:text="${quizName}">Quiz</h1>
+
+    <form th:action="@{/student/quiz/{quizName}/submit(quizName=${quizName})}" method="post">
+      <div class="card" th:each="q, iter : ${questions}">
+        <h3 th:text="${iter.index + 1} + '. ' + ${q.questionText}"></h3>
+        <label>
+          <input type="radio" th:name="${'q_' + q.id}" value="A" required>
+          <span th:text="${q.optionA}"></span>
+        </label>
+        <label>
+          <input type="radio" th:name="${'q_' + q.id}" value="B">
+          <span th:text="${q.optionB}"></span>
+        </label>
+      </div>
+      <button class="btn" type="submit">Submit Quiz</button>
+    </form>
+  </div>
+</body>
+</html>

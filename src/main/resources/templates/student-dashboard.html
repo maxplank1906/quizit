@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizIt - Student Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #0b0f1a;
+      --surface: #111827;
+      --card:    #161d2e;
+      --border:  #1e2d45;
+      --accent:  #3b82f6;
+      --accent2: #06b6d4;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --success: #22c55e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      padding-bottom: 2rem;
+    }
+
+    .sidebar-logo {
+      padding: 1.8rem 1.5rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+
+    .logo-text span { color: var(--accent); }
+
+    .sidebar-label {
+      font-size: 0.67rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 1.3rem 1.5rem 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.65rem 1.5rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      color: var(--text);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(59, 130, 246, 0.08);
+      font-weight: 500;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 1rem 1.5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .student-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.6rem 0;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .s-name { font-size: 0.83rem; font-weight: 500; }
+    .s-role { font-size: 0.7rem; color: var(--muted); }
+
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 2rem 2.4rem;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+      gap: 1rem;
+    }
+
+    .title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .title span { color: var(--accent); }
+
+    .logout {
+      color: #7dd3fc;
+      text-decoration: none;
+      font-size: 0.9rem;
+      border: 1px solid #1e3a5f;
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      background: #0f172a;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 0.9rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .stat small {
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+
+    .stat h3 {
+      margin-top: 0.4rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+      scroll-margin-top: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-head h2 {
+      font-size: 1rem;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .list {
+      padding: 0.9rem 1rem;
+    }
+
+    .quiz-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(30, 45, 69, 0.6);
+      gap: 1rem;
+    }
+
+    .quiz-item:last-child { border-bottom: none; }
+
+    .quiz-name { font-weight: 600; }
+
+    .start {
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.84rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(30, 45, 69, 0.6);
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .score {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        min-height: auto;
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      body {
+        flex-direction: column;
+      }
+
+      .stats { grid-template-columns: 1fr; }
+      .top { align-items: flex-start; flex-direction: column; }
+      .quiz-item { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">Q</div>
+      <div class="logo-text">Quiz<span>It</span></div>
+    </div>
+
+    <div class="sidebar-label">Navigation</div>
+    <a class="nav-item active" href="#dashboard">Dashboard</a>
+    <a class="nav-item" href="#quizzes">My Quizzes</a>
+    <a class="nav-item" href="#results">Results</a>
+    <a class="nav-item" href="/logout">Logout</a>
+
+    <div class="sidebar-bottom">
+      <div class="student-chip">
+        <div class="avatar" th:text="${#strings.substring((userName ?: 'ST'),0,2)}">ST</div>
+        <div>
+          <div class="s-name" th:text="${userName ?: 'Student'}">Student</div>
+          <div class="s-role">Student</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="dashboard">
+    <div class="top">
+      <div>
+        <div class="title">Student <span>Dashboard</span></div>
+        <div style="margin-top:0.2rem;color:var(--muted);" th:text="'Welcome, ' + (${userName} ?: 'Student')"></div>
+      </div>
+      <a class="logout" href="/logout">Logout</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <small>Available Quizzes</small>
+        <h3 th:text="${#lists.size(quizNames)}">0</h3>
+      </div>
+      <div class="stat">
+        <small>Completed Attempts</small>
+        <h3 th:text="${completedCount}">0</h3>
+      </div>
+      <div class="stat">
+        <small>Average Score</small>
+        <h3 th:text="${averageScore} + '%'">0%</h3>
+      </div>
+    </div>
+
+    <section class="section" id="quizzes">
+      <div class="section-head">
+        <h2>Available Quizzes</h2>
+      </div>
+      <div class="list" th:if="${!#lists.isEmpty(quizNames)}">
+        <div class="quiz-item" th:each="quiz : ${quizNames}">
+          <div class="quiz-name" th:text="${quiz}"></div>
+          <a class="start" th:href="@{/student/quiz/{quizName}(quizName=${quiz})}">Start Quiz</a>
+        </div>
+      </div>
+      <div class="empty" th:if="${#lists.isEmpty(quizNames)}">No quizzes available yet.</div>
+    </section>
+
+    <section class="section" id="results">
+      <div class="section-head">
+        <h2>Recent Results</h2>
+      </div>
+      <table th:if="${!#lists.isEmpty(recentResults)}">
+        <thead>
+          <tr>
+            <th>Quiz</th>
+            <th>Score</th>
+            <th>Submitted At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="r : ${recentResults}">
+            <td th:text="${r.quizName}"></td>
+            <td class="score" th:text="${r.correctAnswers} + ' / ' + ${r.totalQuestions} + ' (' + ${r.percentage} + '%)' "></td>
+            <td th:text="${#temporals.format(r.submittedAt, 'yyyy-MM-dd HH:mm')}"></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="empty" th:if="${#lists.isEmpty(recentResults)}">No attempts yet. Start your first quiz.</div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const navItems = Array.from(document.querySelectorAll('.nav-item[href^="#"]'));
+      const sections = navItems
+        .map(item => document.querySelector(item.getAttribute('href')))
+        .filter(Boolean);
+
+      const setActive = (id) => {
+        navItems.forEach(item => {
+          item.classList.toggle('active', item.getAttribute('href') === `#${id}`);
+        });
+      };
+
+      if (sections.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+          const visible = entries
+            .filter(entry => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+          if (visible.length > 0) {
+            setActive(visible[0].target.id);
+          }
+        }, {
+          threshold: [0.2, 0.4, 0.6],
+          rootMargin: '-20% 0px -50% 0px'
+        });
+
+        sections.forEach(section => observer.observe(section));
+      }
+    })();
+  </script>
+</body>
+</html>

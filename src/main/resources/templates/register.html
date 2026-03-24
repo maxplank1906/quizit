@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizIt - Register</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --surface: #111827;
+      --card: #161d2e;
+      --border: #1e2d45;
+      --accent: #3b82f6;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      background: radial-gradient(circle at 20% 20%, #172554 0%, transparent 35%),
+                  radial-gradient(circle at 80% 80%, #14532d 0%, transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.6rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      color: #fff;
+    }
+
+    .brand h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .brand h1 span { color: var(--accent); }
+
+    .sub {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-bottom: 1rem;
+    }
+
+    .group { margin-bottom: 0.9rem; }
+
+    label {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.8rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .error {
+      color: #fca5a5;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    .hint {
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .hint a {
+      color: #7dd3fc;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="logo">Q</div>
+      <h1>Quiz<span>It</span></h1>
+    </div>
+
+    <p class="sub">Create your student account.</p>
+
+    <form method="post" action="/register" th:object="${registration}">
+      <div class="group">
+        <label for="name">Full Name</label>
+        <input id="name" type="text" th:field="*{name}" required />
+        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+      </div>
+
+      <div class="group">
+        <label for="email">Email</label>
+        <input id="email" type="email" th:field="*{email}" required />
+        <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+      </div>
+
+      <div class="group">
+        <label for="password">Password</label>
+        <input id="password" type="password" th:field="*{password}" required />
+        <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+      </div>
+
+      <div class="group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword" type="password" th:field="*{confirmPassword}" required />
+        <div class="error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+      </div>
+
+      <button type="submit">Create Account</button>
+    </form>
+
+    <div class="hint">Already have an account? <a href="/login">Login here</a></div>
+  </div>
+</body>
+</html>
