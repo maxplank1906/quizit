@@ -1,34 +1,142 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quiz Result</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
-    body { font-family: Arial, sans-serif; background: #0b0f1a; color: #e2e8f0; margin: 0; }
-    .container { max-width: 900px; margin: 2rem auto; padding: 1rem; }
-    .summary { background: #161d2e; border: 1px solid #1e2d45; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
-    .row { background: #111827; border: 1px solid #1e2d45; border-radius: 10px; padding: 0.8rem; margin-bottom: 0.7rem; }
-    .ok { color: #22c55e; }
-    .bad { color: #ef4444; }
-    a { color: #7dd3fc; text-decoration: none; }
+    :root {
+      --bg: #0b0f1a; --card: #161d2e; --border: #1e2d45;
+      --accent: #3b82f6; --text: #e2e8f0; --muted: #64748b;
+      --success: #22c55e; --danger: #ef4444; --gold: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    .container { max-width: 760px; margin: 2rem auto; padding: 1rem; }
+
+    .summary {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.4rem; margin-bottom: 1.2rem;
+    }
+    .summary h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; margin-bottom: 0.8rem; }
+    .summary p { margin-bottom: 0.4rem; font-size: 0.95rem; color: var(--muted); }
+    .summary p strong { color: var(--text); }
+    .summary a { color: #7dd3fc; text-decoration: none; font-size: 0.9rem; }
+
+    .actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    .btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; text-decoration: none; border: 1px solid var(--border); }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--muted); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+    /* Certificate */
+    .certificate {
+      background: linear-gradient(135deg, #0f1f3d, #1a2e4a);
+      border: 2px solid var(--gold);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      margin-bottom: 1.2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .certificate::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 70%);
+    }
+    .cert-badge { font-size: 3rem; margin-bottom: 0.5rem; }
+    .cert-title { font-family: 'Syne', sans-serif; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+    .cert-heading { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+    .cert-sub { font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.75rem; }
+    .cert-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--gold); margin-bottom: 0.4rem; }
+    .cert-quiz { font-size: 0.95rem; color: #e2e8f0; margin-bottom: 0.3rem; }
+    .cert-score { font-size: 1.1rem; font-weight: 600; color: var(--success); margin-bottom: 1rem; }
+    .cert-footer { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; }
+    .btn-cert { display: inline-block; margin-top: 1rem; padding: 0.55rem 1.2rem; background: var(--gold); color: #0b0f1a; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; }
+    .btn-cert:hover { background: #d97706; }
+
+    /* Question rows */
+    .row {
+      background: #111827; border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.9rem 1rem; margin-bottom: 0.7rem;
+    }
+    .q-text { font-weight: 500; margin-bottom: 0.4rem; }
+    .q-detail { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .q-detail strong { color: var(--text); }
+    .ok { color: var(--success); font-weight: 600; font-size: 0.85rem; margin-top: 0.3rem; }
+    .bad { color: var(--danger); font-weight: 600; font-size: 0.85rem; margin-top: 0.3rem; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="summary">
-      <h2 th:text="${quizName} + ' - Result'"></h2>
-      <p>Score: <strong th:text="${correct} + ' / ' + ${total}"></strong></p>
-      <p>Percentage: <strong th:text="${percentage} + '%'">0%</strong></p>
-      <p><a href="/student-dashboard">Back to Dashboard</a></p>
-    </div>
+<div class="container">
 
-    <div class="row" th:each="item : ${evaluated}">
-      <div th:text="${item.questionText}"></div>
-      <div>Selected: <strong th:text="${item.selected}"></strong></div>
-      <div>Correct: <strong th:text="${item.correct}"></strong></div>
-      <div th:class="${item.isCorrect} ? 'ok' : 'bad'" th:text="${item.isCorrect} ? 'Correct' : 'Incorrect'"></div>
+  <!-- Certificate (shown only when passed) -->
+  <div class="certificate" th:if="${passed}" id="certificate">
+    <div class="cert-badge">🎓</div>
+    <div class="cert-title">Certificate of Completion</div>
+    <div class="cert-heading">QuizIt</div>
+    <div class="cert-sub">This certifies that</div>
+    <div class="cert-name" th:text="${userName ?: 'Student'}">Student Name</div>
+    <div class="cert-quiz">has successfully completed</div>
+    <div class="cert-quiz" style="font-weight:600;color:#e2e8f0;" th:text="${quizName}">Quiz Name</div>
+    <div class="cert-score" th:text="'Score: ' + ${correct} + ' / ' + ${total} + ' (' + ${percentage} + '%)'">Score</div>
+    <div class="cert-footer">Issued by QuizIt · Online Exam Management System</div>
+    <br/>
+    <button class="btn-cert" onclick="printCertificate()">🖨 Print Certificate</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary">
+    <h2 th:text="${quizName} + ' — Result'">Quiz Result</h2>
+    <p>Score: <strong th:text="${correct} + ' / ' + ${total}">0/0</strong></p>
+    <p>Percentage: <strong th:text="${percentage} + '%'">0%</strong></p>
+    <p th:if="${passed}" style="color:var(--success);font-weight:600;">✓ Passed</p>
+    <p th:if="${!passed}" style="color:var(--danger);font-weight:600;">✗ Did not pass (50% required)</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/student-dashboard">Back to Dashboard</a>
+      <a class="btn btn-ghost" href="/leaderboard">View Leaderboard</a>
     </div>
   </div>
+
+  <!-- Per-question breakdown -->
+  <div class="row" th:each="item : ${evaluated}">
+    <div class="q-text" th:text="${item.questionText}">Question</div>
+    <div class="q-detail">Selected: <strong th:text="${item.selected}">-</strong></div>
+    <div class="q-detail">Correct: <strong th:text="${item.correct}">-</strong></div>
+    <div th:class="${item.isCorrect} ? 'ok' : 'bad'" th:text="${item.isCorrect} ? '✓ Correct' : '✗ Incorrect'"></div>
+  </div>
+
+</div>
+
+<script>
+  function printCertificate() {
+    const cert = document.getElementById('certificate').cloneNode(true);
+    // Remove the print button from the clone
+    const btn = cert.querySelector('.btn-cert');
+    if (btn) btn.remove();
+
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <html><head><title>Certificate</title>
+      <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+      <style>
+        body { margin: 0; background: #0b0f1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'DM Sans', sans-serif; }
+        .certificate { background: linear-gradient(135deg,#0f1f3d,#1a2e4a); border: 2px solid #f59e0b; border-radius: 16px; padding: 3rem 2.5rem; text-align: center; max-width: 600px; width: 90%; }
+        .cert-badge { font-size: 3.5rem; margin-bottom: 0.5rem; }
+        .cert-title { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: #f59e0b; margin-bottom: 0.5rem; }
+        .cert-heading { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+        .cert-sub { font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.75rem; }
+        .cert-name { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.4rem; }
+        .cert-quiz { font-size: 1rem; color: #e2e8f0; margin-bottom: 0.3rem; }
+        .cert-score { font-size: 1.1rem; font-weight: 600; color: #22c55e; margin-bottom: 1rem; }
+        .cert-footer { font-size: 0.72rem; color: #64748b; letter-spacing: 0.05em; }
+      </style></head><body>` + cert.outerHTML + `</body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 500);
+  }
+</script>
 </body>
 </html>

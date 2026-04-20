@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -133,7 +134,34 @@ public class StudentController {
         model.addAttribute("total", total);
         model.addAttribute("percentage", result.getPercentage());
         model.addAttribute("evaluated", evaluated);
+        model.addAttribute("passed", result.getPercentage() >= 50.0);
+        model.addAttribute("userName", session.getAttribute("userName"));
         return "quiz-result";
+    }
+
+    @GetMapping("/leaderboard")
+    public String leaderboard(Model model, HttpSession session) {
+        if (session.getAttribute("userRole") == null) {
+            return "redirect:/login";
+        }
+
+        List<Object[]> rows = quizResultRepository.findLeaderboard();
+        List<Map<String, Object>> board = new ArrayList<>();
+        int rank = 1;
+        for (Object[] row : rows) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("rank", rank++);
+            entry.put("name", row[1]);
+            entry.put("attempts", row[2]);
+            double avg = row[3] instanceof Number ? ((Number) row[3]).doubleValue() : 0.0;
+            entry.put("avgScore", Math.round(avg * 10.0) / 10.0);
+            board.add(entry);
+        }
+
+        model.addAttribute("leaderboard", board);
+        model.addAttribute("userName", session.getAttribute("userName"));
+        model.addAttribute("userRole", session.getAttribute("userRole"));
+        return "leaderboard";
     }
 
     private boolean isStudent(HttpSession session) {

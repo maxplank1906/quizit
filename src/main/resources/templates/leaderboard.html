@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizIt — Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0b0f1a; --surface: #111827; --card: #161d2e; --border: #1e2d45;
+      --accent: #3b82f6; --accent2: #06b6d4; --text: #e2e8f0; --muted: #64748b;
+      --success: #22c55e; --gold: #f59e0b; --silver: #94a3b8; --bronze: #b45309;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 240px; min-height: 100vh; background: var(--surface);
+      border-right: 1px solid var(--border); display: flex; flex-direction: column;
+      position: fixed; padding-bottom: 2rem;
+    }
+    .sidebar-logo { padding: 1.8rem 1.5rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; color: #fff; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
+    .logo-text span { color: var(--accent); }
+    .sidebar-label { font-size: 0.67rem; font-weight: 500; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 1.3rem 1.5rem 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 1.5rem; color: var(--muted); text-decoration: none; font-size: 0.875rem; border-left: 3px solid transparent; transition: all 0.2s; }
+    .nav-item:hover { color: var(--text); background: rgba(59,130,246,0.05); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(59,130,246,0.08); font-weight: 500; }
+    .sidebar-bottom { margin-top: auto; padding: 1rem 1.5rem 0; border-top: 1px solid var(--border); }
+    .student-chip { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; color: #fff; }
+    .s-name { font-size: 0.83rem; font-weight: 500; }
+    .s-role { font-size: 0.7rem; color: var(--muted); }
+
+    .main { margin-left: 240px; flex: 1; padding: 2rem 2.4rem; }
+    .page-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .page-title span { color: var(--accent); }
+    .page-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.8rem; }
+
+    .board-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .board-header { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border); font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 600; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 0.72rem 1.4rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+    td { padding: 0.88rem 1.4rem; font-size: 0.88rem; border-bottom: 1px solid rgba(30,45,69,0.6); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(59,130,246,0.04); }
+
+    .rank-badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
+    .rank-1 { background: rgba(245,158,11,0.2); color: var(--gold); border: 1px solid rgba(245,158,11,0.4); }
+    .rank-2 { background: rgba(148,163,184,0.2); color: var(--silver); border: 1px solid rgba(148,163,184,0.4); }
+    .rank-3 { background: rgba(180,83,9,0.2); color: var(--bronze); border: 1px solid rgba(180,83,9,0.4); }
+    .rank-n { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid var(--border); }
+
+    .score-bar-wrap { display: flex; align-items: center; gap: 0.75rem; }
+    .score-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; max-width: 160px; }
+    .score-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .score-text { font-weight: 600; color: var(--success); min-width: 50px; }
+
+    .empty { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">Q</div>
+    <div class="logo-text">Quiz<span>It</span></div>
+  </div>
+
+  <div class="sidebar-label">Navigation</div>
+  <a class="nav-item" th:href="${userRole == 'STUDENT'} ? '/student-dashboard' : '/admin-dashboard'">Dashboard</a>
+  <a class="nav-item active" href="/leaderboard">Leaderboard</a>
+  <a class="nav-item" href="/logout">Logout</a>
+
+  <div class="sidebar-bottom">
+    <div class="student-chip">
+      <div class="avatar" th:text="${#strings.substring((userName ?: 'US'),0,2)}">US</div>
+      <div>
+        <div class="s-name" th:text="${userName ?: 'User'}">User</div>
+        <div class="s-role" th:text="${userRole ?: 'STUDENT'}">STUDENT</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-title">🏆 <span>Leaderboard</span></div>
+  <div class="page-sub">Top students ranked by average quiz score</div>
+
+  <div class="board-card">
+    <div class="board-header">Student Rankings</div>
+
+    <div th:if="${#lists.isEmpty(leaderboard)}" class="empty">
+      No quiz attempts recorded yet.
+    </div>
+
+    <table th:if="${!#lists.isEmpty(leaderboard)}">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Student</th>
+          <th>Quizzes Taken</th>
+          <th>Average Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="entry : ${leaderboard}">
+          <td>
+            <div th:class="${entry.rank == 1} ? 'rank-badge rank-1' : (${entry.rank == 2} ? 'rank-badge rank-2' : (${entry.rank == 3} ? 'rank-badge rank-3' : 'rank-badge rank-n'))"
+                 th:text="${entry.rank}">1</div>
+          </td>
+          <td th:text="${entry.name}">Student Name</td>
+          <td th:text="${entry.attempts}">0</td>
+          <td>
+            <div class="score-bar-wrap">
+              <div class="score-bar">
+                <div class="score-fill" th:style="'width:' + ${entry.avgScore} + '%'"></div>
+              </div>
+              <span class="score-text" th:text="${entry.avgScore} + '%'">0%</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

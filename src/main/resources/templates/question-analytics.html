@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuizIt — Question Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0b0f1a; --surface: #111827; --card: #161d2e; --border: #1e2d45;
+      --accent: #3b82f6; --accent2: #06b6d4; --text: #e2e8f0; --muted: #64748b;
+      --danger: #ef4444; --warning: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    .sidebar { width: 260px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; padding-bottom: 2rem; }
+    .sidebar-logo { padding: 1.8rem 1.6rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: #fff; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.25rem; }
+    .logo-text span { color: var(--accent); }
+    .sidebar-label { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 1.4rem 1.6rem 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1.6rem; color: var(--muted); text-decoration: none; font-size: 0.9rem; border-left: 3px solid transparent; transition: all 0.2s; }
+    .nav-item:hover { color: var(--text); background: rgba(59,130,246,0.06); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(59,130,246,0.08); font-weight: 500; }
+    .sidebar-bottom { margin-top: auto; padding: 1rem 1.6rem 0; border-top: 1px solid var(--border); }
+    .admin-chip { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #fff; }
+    .admin-name { font-size: 0.85rem; font-weight: 500; }
+    .admin-role { font-size: 0.72rem; color: var(--muted); }
+
+    .main { margin-left: 260px; flex: 1; padding: 2rem 2.5rem; }
+    .page-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .page-title span { color: var(--accent); }
+    .page-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.8rem; }
+
+    .analytics-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .card-header { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border); font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 600; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 0.72rem 1.4rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+    td { padding: 0.88rem 1.4rem; font-size: 0.85rem; border-bottom: 1px solid rgba(30,45,69,0.6); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(239,68,68,0.03); }
+
+    .badge { font-size: 0.72rem; padding: 0.25rem 0.65rem; border-radius: 20px; font-weight: 500; background: rgba(59,130,246,0.15); color: var(--accent); }
+    .miss-bar-wrap { display: flex; align-items: center; gap: 0.75rem; }
+    .miss-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; max-width: 120px; }
+    .miss-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--warning), var(--danger)); }
+    .miss-count { font-weight: 600; color: var(--danger); min-width: 30px; }
+
+    .empty { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">Q</div>
+    <div class="logo-text">Quiz<span>It</span></div>
+  </div>
+
+  <div class="sidebar-label">Main Menu</div>
+  <a class="nav-item" href="/admin-dashboard">Dashboard</a>
+  <a class="nav-item" href="/admin/users/new">Users</a>
+  <a class="nav-item" href="/question-form">Question Bank</a>
+  <a class="nav-item active" href="/admin/analytics">Analytics</a>
+  <a class="nav-item" href="/leaderboard">Leaderboard</a>
+  <a class="nav-item" href="/admin/users/export">Export Users</a>
+
+  <div class="sidebar-label">System</div>
+  <a class="nav-item" href="/logout">Logout</a>
+
+  <div class="sidebar-bottom">
+    <div class="admin-chip">
+      <div class="avatar" th:text="${#strings.substring((userName ?: 'AD'),0,2)}">AD</div>
+      <div>
+        <div class="admin-name" th:text="${userName ?: 'Admin'}">Admin</div>
+        <div class="admin-role" th:text="${userRole ?: 'ADMIN'}">ADMIN</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-title">📊 Question <span>Analytics</span></div>
+  <div class="page-sub">Top 10 most frequently missed questions across all quizzes</div>
+
+  <div class="analytics-card">
+    <div class="card-header">Most Missed Questions</div>
+
+    <div th:if="${#lists.isEmpty(analytics)}" class="empty">
+      No quiz attempts recorded yet. Analytics will appear once students start taking quizzes.
+    </div>
+
+    <table th:if="${!#lists.isEmpty(analytics)}">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Quiz</th>
+          <th>Question</th>
+          <th>Total Attempts</th>
+          <th>Times Missed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="row, iter : ${analytics}">
+          <td style="color:var(--muted);" th:text="${iter.count}">1</td>
+          <td><span class="badge" th:text="${row.quizName}">Quiz</span></td>
+          <td th:text="${row.questionText}">Question text</td>
+          <td style="color:var(--muted);" th:text="${row.totalAttempts}">0</td>
+          <td>
+            <div class="miss-bar-wrap">
+              <div class="miss-bar">
+                <div class="miss-fill"
+                     th:style="${row.totalAttempts != null and row.totalAttempts != 0} ? 'width:' + (${row.wrongCount} * 100 / ${row.totalAttempts}) + '%' : 'width:0%'">
+                </div>
+              </div>
+              <span class="miss-count" th:text="${row.wrongCount}">0</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

@@ -1,8 +1,11 @@
 package com.quizit.quizit.controller;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -226,6 +229,29 @@ public class AdminController {
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .contentLength(data.length)
                 .body(resource);
+    }
+
+    @GetMapping("/admin/analytics")
+    public String questionAnalytics(Model model, HttpSession session) {
+        if (!isAuthorized(session)) {
+            return "redirect:/login";
+        }
+
+        List<Object[]> rows = quizResultRepository.findMostMissedQuestions();
+        List<Map<String, Object>> analytics = new ArrayList<>();
+        for (Object[] row : rows) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("quizName", row[1]);
+            entry.put("questionText", row[2]);
+            entry.put("totalAttempts", row[3]);
+            entry.put("wrongCount", row[4]);
+            analytics.add(entry);
+        }
+
+        model.addAttribute("analytics", analytics);
+        model.addAttribute("userName", session.getAttribute("userName"));
+        model.addAttribute("userRole", session.getAttribute("userRole"));
+        return "question-analytics";
     }
 
     private boolean isAuthorized(HttpSession session) {
